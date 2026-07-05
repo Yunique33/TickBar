@@ -1,0 +1,14 @@
+# Сборка
+*.app/
+*.icns
+icon_*.png
+
+# macOS
+.DS_Store
+
+# Прочее
+*.swiftmodule
+build/
+
+# Скачиваемый архив кладём вручную (см. dist/)
+!dist/
