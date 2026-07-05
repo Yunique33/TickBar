@@ -1,9 +1,9 @@
 import Cocoa
 
-// MARK: - Локализация
+// MARK: - Localization
 
 enum L10n {
-    // (код, родное название) — порядок отображения в меню
+    // (code, native name) — display order in the menu
     static let languages: [(code: String, name: String)] = [
         ("en", "English"),
         ("ru", "Русский"),
@@ -21,7 +21,7 @@ enum L10n {
            languages.contains(where: { $0.code == saved }) {
             return saved
         }
-        // по умолчанию — системный язык, иначе английский
+        // default to the system language, otherwise English
         let pref = Locale.preferredLanguages.first?.prefix(2).lowercased() ?? "en"
         return languages.contains(where: { $0.code == pref }) ? pref : "en"
     }
@@ -30,7 +30,7 @@ enum L10n {
         UserDefaults.standard.set(code, forKey: "sw.lang")
     }
 
-    // ключ -> (язык -> текст). en присутствует всегда (фолбэк).
+    // key -> (language -> text). "en" is always present (fallback).
     private static let table: [String: [String: String]] = [
         "reset": ["en": "Reset", "ru": "Сброс", "uk": "Скинути", "tr": "Sıfırla",
                   "es": "Reiniciar", "de": "Zurücksetzen", "fr": "Réinitialiser", "crh": "Sıfırla", "crh-Cyrl": "Сыфырла"],
@@ -50,7 +50,7 @@ enum L10n {
                 "es": "min", "de": "Min", "fr": "min", "crh": "daqqa", "crh-Cyrl": "дакъкъа"],
         "hour": ["en": "h", "ru": "ч", "uk": "год", "tr": "sa",
                  "es": "h", "de": "Std", "fr": "h", "crh": "saat", "crh-Cyrl": "саат"],
-        // названия звуков
+        // sound names
         "no_sound": ["en": "No sound", "ru": "Без звука", "uk": "Без звуку", "tr": "Sessiz",
                      "es": "Sin sonido", "de": "Kein Ton", "fr": "Aucun son", "crh": "Sessiz", "crh-Cyrl": "Сессиз"],
         "drop": ["en": "Drop", "ru": "Капля", "uk": "Крапля", "tr": "Damla",
@@ -77,7 +77,7 @@ enum L10n {
 
 func t(_ key: String) -> String { L10n.t(key) }
 
-// MARK: - Автозапуск при входе в систему (LaunchAgent)
+// MARK: - Launch at login (LaunchAgent)
 
 enum LoginItem {
     static let label = "bar.tick.tickbar"
@@ -108,7 +108,7 @@ enum LoginItem {
             }
         } else {
             try? fm.removeItem(at: plistURL)
-            // если уже загружен в текущей сессии — выгрузить
+            // if already loaded in the current session, unload it
             let p = Process()
             p.launchPath = "/bin/launchctl"
             p.arguments = ["bootout", "gui/\(getuid())/\(label)"]
@@ -117,21 +117,21 @@ enum LoginItem {
     }
 }
 
-// MARK: - Модель секундомера с сохранением состояния
+// MARK: - Stopwatch model with persisted state
 
 final class StopwatchModel {
-    private let kAccumulated = "sw.accumulated"   // накопленное время (сек) вне текущего сегмента
-    private let kIsRunning   = "sw.isRunning"     // шёл ли отсчёт на момент выхода
+    private let kAccumulated = "sw.accumulated"   // accumulated time (s) outside the current segment
+    private let kIsRunning   = "sw.isRunning"     // whether it was running when the app quit
 
     private(set) var accumulated: TimeInterval = 0
-    private(set) var startDate: Date?           // != nil => идёт отсчёт
+    private(set) var startDate: Date?           // != nil => currently running
 
     var isRunning: Bool { startDate != nil }
 
     init() {
         let d = UserDefaults.standard
         accumulated = d.double(forKey: kAccumulated)
-        // если был запущен — продолжаем отсчёт с текущего момента
+        // if it was running, resume counting from now
         if d.bool(forKey: kIsRunning) {
             startDate = Date()
         }
@@ -158,7 +158,7 @@ final class StopwatchModel {
         save()
     }
 
-    /// Сдвинуть показания на delta секунд (может быть отрицательным), не уходя ниже нуля.
+    /// Shift the elapsed time by delta seconds (may be negative), never going below zero.
     func adjust(_ delta: TimeInterval) {
         let segment = startDate.map { Date().timeIntervalSince($0) } ?? 0
         var total = accumulated + segment + delta
@@ -169,10 +169,10 @@ final class StopwatchModel {
 
     func save() {
         let d = UserDefaults.standard
-        // храним суммарное время, чтобы при падении/выходе не потерять текущий сегмент
+        // store the total time so a crash/quit doesn't lose the current segment
         let segment = startDate.map { Date().timeIntervalSince($0) } ?? 0
         if isRunning {
-            // фиксируем накопленное + текущий сегмент, рестартуем точку отсчёта
+            // fold the current segment into accumulated and restart the reference point
             accumulated += segment
             startDate = Date()
         }
@@ -181,7 +181,7 @@ final class StopwatchModel {
     }
 }
 
-// MARK: - Приложение
+// MARK: - Application
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -189,8 +189,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var timer: Timer?
     private lazy var contextMenu = buildMenu()
 
-    private var flashUntil: Date?                       // момент окончания вспышки
-    // (ключ перевода, имя файла/системного звука для NSSound; "" — без звука)
+    private var flashUntil: Date?                       // when the click flash ends
+    // (translation key, bundled/system sound name for NSSound; "" = no sound)
     private let sounds: [(key: String, name: String)] = [
         ("no_sound", ""),
         ("drop", "Drop"),
@@ -230,7 +230,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         timer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
             guard let self else { return }
             self.render()
-            // автосохранение каждые ~3 c во время работы — на случай нештатного закрытия
+            // autosave every ~3s while running, in case of an abnormal quit
             tick += 1
             if tick % 12 == 0 && self.model.isRunning {
                 self.model.save()
@@ -238,7 +238,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         if let timer { RunLoop.main.add(timer, forMode: .common) }
 
-        // подстраховка: сохранить, если приложение завершают/усыпляют
+        // safety net: save when the app resigns active / is quit
         NotificationCenter.default.addObserver(
             forName: NSApplication.willResignActiveNotification, object: nil, queue: .main
         ) { [weak self] _ in self?.model.save() }
@@ -250,7 +250,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.save()
     }
 
-    // MARK: Отрисовка
+    // MARK: Rendering
 
     private func render() {
         guard let button = statusItem.button else { return }
@@ -259,7 +259,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         button.imagePosition = .imageOnly
     }
 
-    /// Рисуем содержимое статус-бара вручную: рамка + (иконка при работе) + время.
+    /// Draw the status bar content manually: border + (icon while running) + time.
     private func makeImage() -> NSImage {
         let e = Int(model.elapsed)
         let h = e / 3600, m = (e % 3600) / 60, s = e % 60
@@ -269,11 +269,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let running = model.isRunning
         let flashing = flashUntil.map { Date() < $0 } ?? false
-        // цифры всегда белые; акцент (рамка + иконка) светло-зелёный во время работы
+        // digits are always white; accent (border + icon) is light green while running
         let accent = NSColor.white
         let lightGreen = NSColor(srgbRed: 0.20, green: 1.0, blue: 0.40, alpha: 1)
 
-        // шрифт всегда одинаковый — размер и насыщенность не меняются
+        // font is always the same — size and weight never change
         let font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize - 0.75, weight: .regular)
         let attrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: accent]
         let textSize = (text as NSString).size(withAttributes: attrs)
@@ -287,7 +287,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let img = NSImage(size: NSSize(width: width, height: height))
         img.lockFocus()
 
-        // Рамка со скруглёнными углами
+        // Rounded-corner border
         let inset: CGFloat = 1.5
         let rect = NSRect(x: inset, y: inset, width: width - 2*inset, height: height - 2*inset)
         let border = NSBezierPath(roundedRect: rect, xRadius: 5, yRadius: 5)
@@ -304,7 +304,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         border.stroke()
 
         var x = hPad
-        // Иконка секундомера — только когда идёт отсчёт
+        // Stopwatch icon — only while running
         if running, let sym = NSImage(systemSymbolName: "stopwatch.fill", accessibilityDescription: nil) {
             let cfg = NSImage.SymbolConfiguration(pointSize: 12, weight: .semibold)
             let base = sym.withSymbolConfiguration(cfg) ?? sym
@@ -332,7 +332,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return copy
     }
 
-    // MARK: Клики по иконке
+    // MARK: Status item clicks
 
     @objc private func statusClicked() {
         let event = NSApp.currentEvent
@@ -340,11 +340,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             || event?.modifierFlags.contains(.control) == true
         if isRight {
             statusItem.menu = contextMenu
-            statusItem.button?.performClick(nil)   // показать меню
-            statusItem.menu = nil                  // вернуть обработку кликов
+            statusItem.button?.performClick(nil)   // show the menu
+            statusItem.menu = nil                  // restore click handling
         } else {
             model.toggle()
-            if model.isRunning {                // звук только при включении
+            if model.isRunning {                // sound only when starting
                 playStartSound()
             }
             flashUntil = Date().addingTimeInterval(0.18)
@@ -353,7 +353,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    // MARK: Меню
+    // MARK: Menu
 
     private func buildMenu() -> NSMenu {
         let menu = NSMenu()
@@ -410,7 +410,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         UserDefaults.standard.set(currentSound, forKey: "sw.sound")
         sender.menu?.items.forEach { $0.state = ($0 == sender) ? .on : .off }
         if !currentSound.isEmpty {
-            NSSound(named: NSSound.Name(currentSound))?.play()   // прослушать выбор
+            NSSound(named: NSSound.Name(currentSound))?.play()   // preview the choice
         }
     }
 
@@ -421,12 +421,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func selectLanguage(_ sender: NSMenuItem) {
         L10n.set(L10n.languages[sender.tag].code)
-        contextMenu = buildMenu()   // перестроить меню на новом языке
+        contextMenu = buildMenu()   // rebuild the menu in the new language
     }
 
     @objc private func doReset() { model.reset(); render() }
 
-    // MARK: Панель изменения времени (остаётся открытой при кликах)
+    // MARK: Time adjustment panel (stays open on clicks)
 
     private func makeAdjustView() -> NSView {
         let incs: [(String, Int)] = [

@@ -6,7 +6,7 @@ APP="TickBar.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
-# --- Иконка ---
+# --- Icon ---
 swiftc -O makeicon.swift -o /tmp/ms_makeicon -framework Cocoa
 /tmp/ms_makeicon /tmp/ms_icon_1024.png
 
@@ -24,13 +24,13 @@ sips -z 512  512  /tmp/ms_icon_1024.png --out "$ICONSET/icon_512x512.png"    >/d
 cp /tmp/ms_icon_1024.png "$ICONSET/icon_512x512@2x.png"
 iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/AppIcon.icns"
 
-# --- Звуки ---
+# --- Sounds ---
 python3 gensounds.py
 cp sounds/*.wav "$APP/Contents/Resources/"
 
-# --- Бинарник ---
+# --- Binary ---
 swiftc -O main.swift -o "$APP/Contents/MacOS/TickBar" -framework Cocoa
 cp Info.plist "$APP/Contents/Info.plist"
 
-echo "Готово: $(pwd)/$APP"
-echo "Запуск:  open \"$(pwd)/$APP\""
+echo "Done: $(pwd)/$APP"
+echo "Run:  open \"$(pwd)/$APP\""

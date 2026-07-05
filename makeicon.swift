@@ -11,7 +11,7 @@ NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
 
 let S = CGFloat(size)
 
-// Фон: скруглённый квадрат с градиентом
+// Background: rounded square with a gradient
 let pad: CGFloat = 76
 let bgRect = NSRect(x: pad, y: pad, width: S - 2*pad, height: S - 2*pad)
 let bgPath = NSBezierPath(roundedRect: bgRect, xRadius: 185, yRadius: 185)
@@ -23,20 +23,20 @@ let cx = S / 2
 let cy = S / 2 - 28
 let r: CGFloat = 268
 
-// Верхняя кнопка (стержень) секундомера
+// Top button (stem) of the stopwatch
 NSColor.white.setFill()
 NSBezierPath(roundedRect: NSRect(x: cx - 30, y: cy + r + 4, width: 60, height: 86),
              xRadius: 22, yRadius: 22).fill()
 NSBezierPath(roundedRect: NSRect(x: cx - 92, y: cy + r + 70, width: 184, height: 58),
              xRadius: 28, yRadius: 28).fill()
 
-// Корпус — белое кольцо
+// Body — white ring
 NSColor.white.setStroke()
 let body = NSBezierPath(ovalIn: NSRect(x: cx - r, y: cy - r, width: 2*r, height: 2*r))
 body.lineWidth = 50
 body.stroke()
 
-// Стрелка — зелёная
+// Hand — green
 NSColor.systemGreen.setStroke()
 let hand = NSBezierPath()
 hand.move(to: NSPoint(x: cx, y: cy))
@@ -45,7 +45,7 @@ hand.lineWidth = 36
 hand.lineCapStyle = .round
 hand.stroke()
 
-// Центральная точка
+// Center dot
 let dotR: CGFloat = 30
 NSColor.systemGreen.setFill()
 NSBezierPath(ovalIn: NSRect(x: cx - dotR, y: cy - dotR, width: 2*dotR, height: 2*dotR)).fill()

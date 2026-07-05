@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Генерация коротких мягких звуков-колокольчиков (WAV) для Mini Stopwatch."""
+"""Generate short, soft chime sounds (WAV) for TickBar."""
 import math
 import os
 import struct
@@ -9,9 +9,9 @@ SR = 44100
 
 
 def render(path, freq, dur, partials, decay, peak=0.26):
-    """partials: список (отношение_частоты, амплитуда). decay: скорость затухания."""
+    """partials: list of (frequency_ratio, amplitude). decay: decay rate."""
     n = int(SR * dur)
-    attack = int(SR * 0.005)          # короткая атака, чтобы не было щелчка
+    attack = int(SR * 0.005)          # short attack to avoid a click
     release = int(SR * 0.02)
     samples = []
     amp_sum = sum(a for _, a in partials) or 1.0
@@ -19,7 +19,7 @@ def render(path, freq, dur, partials, decay, peak=0.26):
         t = i / SR
         v = 0.0
         for ratio, a in partials:
-            # высокие партиалы затухают чуть быстрее — звук «нежнее»
+            # higher partials decay a bit faster for a softer sound
             v += a * math.exp(-decay * ratio * t) * math.sin(2 * math.pi * freq * ratio * t)
         v /= amp_sum
         if i < attack:
@@ -40,7 +40,7 @@ def main():
     out = os.path.join(os.path.dirname(__file__), "sounds")
     os.makedirs(out, exist_ok=True)
 
-    # имя файла = имя для NSSound(named:)
+    # file name = the name used by NSSound(named:)
     render(os.path.join(out, "Ding.wav"),   1568, 0.55, [(1, 1.0), (2, 0.25)], 7)
     render(os.path.join(out, "Bell.wav"),    784, 0.70, [(1, 1.0), (2.01, 0.5), (3.0, 0.2)], 5)
     render(os.path.join(out, "Drop.wav"),   1318, 0.28, [(1, 1.0)], 14)

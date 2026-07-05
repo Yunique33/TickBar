@@ -1,4 +1,4 @@
-# Сборка
+# Build
 *.app/
 *.icns
 icon_*.png
@@ -6,9 +6,9 @@ icon_*.png
 # macOS
 .DS_Store
 
-# Прочее
+# Misc
 *.swiftmodule
 build/
 
-# Скачиваемый архив кладём вручную (см. dist/)
+# The downloadable archive is added manually (see dist/)
 !dist/

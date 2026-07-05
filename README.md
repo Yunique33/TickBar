@@ -14,6 +14,10 @@
   &nbsp;·&nbsp; macOS 11+
 </p>
 
+<p align="center">
+  <img src="docs/menubar.png" width="640" alt="TickBar running in the macOS menu bar">
+</p>
+
 ---
 
 ## Install
@@ -39,11 +43,11 @@ Prefer building from source? See [Build](#build) below.
 <table>
   <tr>
     <td align="center">
-      <img src="docs/paused.png" alt="Paused" height="26"><br>
+      <img src="docs/paused.png" alt="Paused" height="40"><br>
       <sub><b>Paused</b> — white, dim border</sub>
     </td>
     <td align="center">
-      <img src="docs/running.png" alt="Running" height="26"><br>
+      <img src="docs/running.png" alt="Running" height="40"><br>
       <sub><b>Running</b> — green border + ⏱ icon</sub>
     </td>
   </tr>
@@ -51,18 +55,9 @@ Prefer building from source? See [Build](#build) below.
 
 The digits never change size or weight between states — only the border and the small stopwatch icon light up green while it's counting, so it stays calm in the menu bar but is still glanceable.
 
-<table>
-  <tr>
-    <td align="center" valign="top">
-      <img src="docs/menu.png" width="300" alt="Context menu"><br>
-      <sub>Right-click menu</sub>
-    </td>
-    <td align="center" valign="top">
-      <img src="docs/languages.png" width="200" alt="Language submenu"><br>
-      <sub>8 languages, Crimean Tatar in two scripts</sub>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="docs/menu.png" width="340" alt="Right-click menu">
+</p>
 
 ## Features
 
@@ -77,9 +72,13 @@ The digits never change size or weight between states — only the border and th
 
 ## Languages
 
-English · Русский · Українська · Türkçe · Español · Deutsch · Français · **Qırımtatarca** (Latin) · **Къырымтатарджа** (Cyrillic)
+English · Русский · Українська · Türkçe · Español · Deutsch · Français · Qırımtatarca (Latin) · Къырымтатарджа (Cyrillic)
 
 The language is picked from your system on first launch (falling back to English) and can be changed any time from **Language** in the menu.
+
+<p align="center">
+  <img src="docs/languages.png" width="200" alt="Language submenu">
+</p>
 
 ## Sounds
 
